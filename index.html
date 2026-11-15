@@ -1,1 +1,684 @@
  
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulari Golden Cup · Expenditure</title>
+<meta name="theme-color" content="#0f5132">
+<link rel="icon" type="image/png" href="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png">
+<link rel="preload" as="image" href="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --green:#0f5132; --green-2:#146c43; --gold:#f2b705; --gold-d:#b98900;
+  --bg:#f4f6f1; --card:#fff; --ink:#16201a; --mute:#63706a; --line:#e1e6df; --red:#b42318;
+  --display:'Barlow Condensed','Arial Narrow',Impact,sans-serif;
+  --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--body)}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:var(--green);color:#fff;border-bottom:4px solid var(--gold)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;gap:14px;padding:14px 0;flex-wrap:wrap}
+.cup{width:46px;height:46px;flex:none}
+.top h1{font:700 30px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;margin:0}
+.top small{display:block;opacity:.8;font-size:13px;letter-spacing:.04em;margin-top:3px}
+.top .sp{flex:1}
+.sync{font-size:12px;opacity:.85}
+.hbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px}
+.hbtn{text-decoration:none;display:inline-block}
+.hbtn:hover{background:rgba(255,255,255,.22)}
+nav{display:flex;gap:4px}
+nav button{background:none;border:0;color:#cfe3d8;padding:12px 18px;cursor:pointer;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-4px}
+nav button[aria-selected=true]{color:#fff;border-bottom-color:var(--gold)}
+main{padding:22px 0 60px}
+.banner{background:#fff6d6;border:1px solid #ecd27a;color:#6b5200;padding:10px 14px;border-radius:10px;margin-bottom:18px;font-size:14px}
+.banner.err{background:#fdecea;border-color:#f3b5ae;color:#7a1b12}
+.grid{display:grid;gap:16px}.grid>*{min-width:0}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h2{font:700 20px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;margin:0 0 14px;color:var(--green)}
+.kpi .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.kpi .val{font:700 34px/1.1 var(--display);margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:13px;color:var(--mute);margin-top:2px}
+.kpi.gold{background:var(--green);color:#fff;border-color:var(--green)}
+.kpi.gold .lbl,.kpi.gold .sub{color:#bcd8c9}.kpi.gold .val{color:var(--gold)}
+.over{color:var(--red)!important}
+.bar{height:10px;background:#e8ece6;border-radius:99px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green-2),var(--gold));border-radius:99px;transition:width .6s}
+.bar.over i{background:var(--red)}
+.two{grid-template-columns:1fr 1fr;margin-top:16px}
+.three{grid-template-columns:1.1fr 1fr;margin-top:16px}
+@media(max-width:860px){.two,.three{grid-template-columns:minmax(0,1fr)}}
+.donutbox{display:flex;gap:22px;justify-content:center;align-items:center;flex-wrap:wrap}
+.donut{width:190px;height:190px;flex:none}
+.donut text{font-family:var(--display);fill:var(--ink)}
+.legend{flex:1;min-width:min(210px,100%);display:grid;gap:7px;font-size:14px}
+.legend div{display:grid;grid-template-columns:12px 1fr auto auto;gap:8px;align-items:center}
+.legend i{width:12px;height:12px;border-radius:3px}
+.legend b{font-variant-numeric:tabular-nums;font-weight:600}
+.legend em{font-style:normal;color:var(--mute);font-size:12px;min-width:38px;text-align:right}
+.cols{display:flex;align-items:flex-end;gap:8px;height:200px;padding-top:20px;overflow-x:auto}
+.col{flex:1;min-width:38px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px}
+.col span{font-size:11px;color:var(--mute);white-space:nowrap}
+.col .b{width:100%;max-width:46px;background:linear-gradient(var(--gold),#d99d00);border-radius:6px 6px 0 0;min-height:3px;transition:height .6s}
+.col .v{font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.hbars{display:grid;gap:12px}
+.hbar .t{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.hbar .t b{font-variant-numeric:tabular-nums}
+.hbar .bar{margin-top:0;height:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:500;background:#eef3ec;white-space:nowrap}
+.sub2{color:var(--mute);font-size:12.5px}
+.scroll{overflow-x:auto}
+.empty{padding:26px;text-align:center;color:var(--mute)}
+form .f{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:4px;font-weight:600}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #cdd5cb;border-radius:9px;background:#fff;min-height:44px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);border-color:var(--gold-d)}
+textarea{min-height:70px;resize:vertical}
+.full{grid-column:1/-1}
+.btn{border:0;border-radius:9px;padding:12px 20px;font-weight:600;cursor:pointer;background:var(--green);color:#fff}
+.btn:hover{background:var(--green-2)}
+.btn.gold{background:var(--gold);color:#241a00}.btn.gold:hover{background:#ffc928}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid #cdd5cb}
+.btn.danger{background:#fff;color:var(--red);border:1px solid #f0b8b2}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn:disabled{opacity:.6;cursor:wait}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filters{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr auto;gap:10px;margin-bottom:14px}
+@media(max-width:860px){.filters{grid-template-columns:1fr 1fr}.filters .s{grid-column:1/-1}}
+dialog{border:0;border-radius:14px;padding:22px;max-width:520px;width:calc(100% - 32px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,25,18,.55)}
+dialog h3{font:700 22px var(--display);letter-spacing:.05em;text-transform:uppercase;color:var(--green);margin:0 0 12px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:#16201a;color:#fff;padding:12px 18px;border-radius:10px;opacity:0;pointer-events:none;transition:.3s;z-index:50;max-width:90%}
+#toast.on{opacity:1;transform:translateX(-50%)}
+#toast.bad{background:var(--red)}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media print{header nav,.hbtn,.btn,.filters,#toast{display:none!important}body{background:#fff}}
+
+.tag.st-Pending{background:#fff1c9;color:#7a5a00}.tag.st-Approved{background:#dcf3e5;color:#0b5a33}.tag.st-Rejected{background:#fde3df;color:#8a1c12}
+nav button[hidden]{display:none}
+.subnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.subnav button{border:1px solid #cdd5cb;background:#fff;border-radius:99px;padding:8px 16px;cursor:pointer;font-weight:600}
+.subnav button[aria-selected=true]{background:var(--green);color:#fff;border-color:var(--green)}
+.badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:99px;background:var(--gold);color:#241a00;font-size:12px;margin-left:6px;text-align:center}
+.pend{display:grid;gap:12px}
+.pcard{border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:center;background:#fffdf5}
+.pcard .amt{font:700 26px var(--display);text-align:right}
+.pcard .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.btn.ok{background:#1b7f4d}.btn.no{background:#fff;color:var(--red);border:1px solid #f0b8b2}
+.note{font-size:14px;color:var(--mute);margin:0 0 14px}
+.thanks{background:#e8f6ee;border:1px solid #b6e0c7;color:#0b5a33;padding:12px 14px;border-radius:10px;margin-bottom:14px}
+.adminbar{background:#16201a;color:#fff;font-size:13px;padding:6px 0}
+dialog.inv{max-width:980px;width:calc(100% - 24px);padding:0;overflow:hidden}
+.invbar{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}.invbar .sp{flex:1}.invbar a{text-decoration:none}
+.invbody{background:#1c211e;height:min(78vh,760px);display:grid;place-items:center;overflow:auto}
+.invbody iframe{width:100%;height:100%;border:0;background:#fff}
+.invbody img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in}
+.invbody img.full{max-width:none;max-height:none;cursor:zoom-out}
+.pk{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.pk .m{border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:12px 14px;background:#fffdf7}
+.pk .m .l{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.pk .m .v{font:700 28px/1.15 var(--display);font-variant-numeric:tabular-nums}
+.pk .m .s{font-size:12.5px;color:var(--mute)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <img src="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png"  width="70" height="70" />
+      <div><h1 id="tName">Pulari Golden Cup</h1><small id="cName">Expenditure · Pulari</small></div>
+      <div class="sp"></div>
+      <span class="sync" id="sync"></span>
+      <a class="hbtn" href="passes.html">Passes &amp; Tickets</a>
+      <button class="hbtn" id="refresh" type="button">Refresh</button>
+      <button class="hbtn" id="lock" type="button">Admin login</button>
+    </div>
+    <nav role="tablist">
+      <button role="tab" aria-selected="true" data-tab="dash">Dashboard</button>
+      <button role="tab" aria-selected="false" data-tab="submit">Submit expense</button>
+      <button role="tab" aria-selected="false" data-tab="records">Records</button>
+      <button role="tab" aria-selected="false" data-tab="admin" id="adminTab" hidden>Admin portal <span class="badge" id="pendBadge" hidden>0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banner"></div>
+
+  <!-- DASHBOARD -->
+  <section id="tab-dash">
+    <div class="grid kpis">
+      <div class="card kpi gold"><div class="lbl">Total spent</div><div class="val" id="kTotal">0</div><div class="sub" id="kCount">0 entries</div></div>
+      <div class="card kpi"><div class="lbl">Budget</div><div class="val" id="kBudget">Not set</div><div class="sub"><button class="btn ghost sm" id="setBudget" type="button" hidden>Set budget</button></div></div>
+      <div class="card kpi"><div class="lbl" id="kRemLbl">Remaining</div><div class="val" id="kRem">-</div><div class="bar" id="kBar"><i style="width:0"></i></div></div>
+      <div class="card kpi"><div class="lbl">Largest expense</div><div class="val" id="kMax">0</div><div class="sub" id="kMaxSub">-</div></div>
+    </div>
+    <p class="note" id="pendNote" style="margin-top:12px"></p>
+
+    <div class="card" id="passCard" style="margin-top:16px">
+      <h2>Passes &amp; season tickets <a class="btn ghost sm" id="passLink" href="passes.html" hidden style="float:right;text-transform:none;letter-spacing:0">Manage →</a></h2>
+      <div class="grid pk" id="passStats"></div>
+      <div class="scroll" id="passRecent" style="margin-top:16px" hidden></div>
+    </div>
+
+    <div class="grid two">
+      <div class="card"><h2>Spend by category</h2><div class="donutbox"><svg class="donut" id="donut" viewBox="0 0 42 42" role="img" aria-label="Spend by category"></svg><div class="legend" id="legend"></div></div></div>
+      <div class="card"><h2>Spend per day</h2><div class="cols" id="daily"></div></div>
+    </div>
+
+    <div class="grid three">
+      <div class="card"><h2>Recent expenses</h2><div class="scroll" id="recent"></div></div>
+      <div class="grid" style="align-content:start">
+        <div class="card"><h2>Payment mode</h2><div class="hbars" id="modes"></div></div>
+        <div class="card"><h2>Top paid to</h2><div class="hbars" id="payees"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEMBER SUBMIT -->
+  <section id="tab-submit" hidden>
+    <div class="card">
+      <h2>Submit an expense</h2>
+      <p class="note">Spent money for the tournament? Enter the details here. The admin will check it, and once approved it shows on the dashboard.</p>
+      <div id="thanks" class="thanks" hidden>Thank you. Your entry was sent to the admin for approval.</div>
+      <form id="form-m" autocomplete="off"></form>
+    </div>
+  </section>
+
+  <!-- PUBLIC RECORDS -->
+  <section id="tab-records" hidden>
+    <div class="card">
+      <h2>Approved expenses <span class="sub2" id="recCount"></span></h2>
+      <div class="filters">
+        <input class="s" id="qSearch" type="search" placeholder="Search description, payee, bill no.">
+        <select id="qCat"><option value="">All categories</option></select>
+        <input id="qFrom" type="date" aria-label="From date">
+        <input id="qTo" type="date" aria-label="To date">
+        <button class="btn ghost" id="csv" type="button">Export CSV</button>
+      </div>
+      <div class="scroll" id="records"></div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px;font-weight:600">Filtered total: <span id="filtTotal">0</span></div>
+    </div>
+  </section>
+
+  <!-- ADMIN PORTAL -->
+  <section id="tab-admin" hidden>
+    <div class="subnav" role="tablist">
+      <button data-sub="pending" aria-selected="true">Waiting for approval <span class="badge" id="pendBadge2">0</span></button>
+      <button data-sub="all" aria-selected="false">All entries</button>
+      <button data-sub="new" aria-selected="false" id="subNewBtn">Add admin entry</button>
+      <button data-sub="settings" aria-selected="false">Settings</button>
+      <a class="btn ghost sm" href="passes.html" style="align-self:center">Passes &amp; season tickets →</a>
+    </div>
+
+    <div id="sub-pending" class="card"><h2>Waiting for approval</h2><div class="pend" id="pendList"></div></div>
+
+    <div id="sub-all" class="card" hidden>
+      <h2>All entries <span class="sub2" id="aCount"></span></h2>
+      <div class="filters" style="grid-template-columns:2fr 1.2fr 1fr auto">
+        <input class="s" id="aSearch" type="search" placeholder="Search">
+        <select id="aCat"><option value="">All categories</option></select>
+        <select id="aStatus"><option value="">All statuses</option><option>Pending</option><option>Approved</option><option>Rejected</option></select>
+        <button class="btn ghost" id="aCsv" type="button">Export CSV</button>
+      </div>
+      <div class="scroll" id="aRecords"></div>
+    </div>
+
+    <div id="sub-settings" class="card" hidden>
+      <h2>Change admin passcode</h2>
+      <p class="note">The new passcode works for the expenses page and the passes page. Share it only with admins.</p>
+      <form id="pwForm" autocomplete="off" style="max-width:420px">
+        <div class="f" style="grid-template-columns:1fr">
+          <div><label for="pwOld">Current passcode</label><input id="pwOld" type="password" autocomplete="off" required></div>
+          <div><label for="pwNew">New passcode (4 to 30 characters)</label><input id="pwNew" type="password" minlength="4" maxlength="30" autocomplete="new-password" required></div>
+          <div><label for="pwNew2">Repeat new passcode</label><input id="pwNew2" type="password" minlength="4" maxlength="30" autocomplete="new-password" required></div>
+        </div>
+        <div class="row" style="margin-top:16px"><button class="btn gold" id="pwSave" type="submit">Change passcode</button></div>
+      </form>
+    </div>
+
+    <div id="sub-new" class="card" hidden>
+      <h2 id="aTitle">New admin entry</h2>
+      <p class="note">Entries added here are approved immediately.</p>
+      <form id="form-a" autocomplete="off"></form>
+    </div>
+  </section>
+</main>
+
+<dialog id="pinDlg">
+  <form id="pinForm">
+    <h3>Admin login</h3>
+    <p class="sub2" style="margin-top:0">Enter the admin passcode.</p>
+    <input id="pinInput" type="password" autocomplete="off" placeholder="Passcode">
+    <p id="pinErr" class="sub2" style="color:var(--red);margin:8px 0 0" role="alert"></p>
+    <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn ghost" type="button" id="pinCancel">Cancel</button><button class="btn" type="submit" id="pinGo">Login</button></div>
+  </form>
+</dialog>
+<dialog id="budDlg">
+  <form id="budForm">
+    <h3>Tournament budget</h3>
+    <label for="budInput">Total budget (<span class="cur"></span>)</label>
+    <input id="budInput" type="number" min="0" step="1" inputmode="numeric">
+    <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn ghost" type="button" id="budCancel">Cancel</button><button class="btn" type="submit">Save budget</button></div>
+  </form>
+</dialog>
+<dialog id="invDlg" class="inv">
+  <div class="invbar"><b>Invoice</b><span class="sp"></span>
+    <a class="btn ghost sm" id="invOpen" target="_blank" rel="noopener">Open in new tab</a>
+    <a class="btn ghost sm" id="invDown" target="_blank" rel="noopener">Download</a>
+    <button class="btn sm" id="invClose" type="button">Close</button></div>
+  <div id="invBody" class="invbody"></div>
+</dialog>
+<dialog id="delDlg">
+  <h3>Delete this entry?</h3>
+  <p id="delText" class="sub2"></p>
+  <div class="row" style="justify-content:flex-end"><button class="btn ghost" id="delNo" type="button">Keep</button><button class="btn danger" id="delYes" type="button">Delete</button></div>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script>
+/* =====================  SETTINGS  ===================== */
+const CONFIG = {
+  // Paste your Google Apps Script Web App URL here (ends with /exec). Leave empty for demo mode.
+  API_URL: 'https://script.google.com/macros/s/AKfycbw-PAK-cJq1aPq0Lfh5ZC-DsJcF62c_GjQs9apLcB_dIbsSP4mfo_hrwHdsq1EyNHUIQg/exec',
+  TOURNAMENT: 'Pulari Golden Cup',
+  CLUB: 'Pulari',
+  CURRENCY: '₹',
+  LOCALE: 'en-IN',
+  AUTO_REFRESH_SEC: 30,  // how often the page re-reads the Google Sheet by itself
+  MAX_UPLOAD_MB: 10,     // largest invoice file (PDF). Must match MAX_FILE_MB in Code.gs
+  IMAGE_MAX_SIDE: 1800,  // JPG photos are shrunk so the longest side is this many pixels (higher = sharper, bigger file)
+  IMAGE_QUALITY: 0.82    // JPG quality 0.5 to 0.95
+};
+const CATEGORIES = [
+  ['Ground & Pitch','#0f5132'], ['Referees & Officials','#f2b705'], ['Prizes & Trophies','#b98900'],
+  ['Jerseys & Kits','#2b8a5a'], ['Food & Refreshments','#e07a1f'], ['Medical & First Aid','#c0392b'],
+  ['Sound, Lights & Decor','#6a4c93'], ['Printing & Publicity','#2f6fb3'], ['Transport','#4a9d9c'],
+  ['Security & Volunteers','#7a8450'], ['Miscellaneous','#8a8f8c']
+];
+const MODES = ['Cash','UPI'];
+const FILE_HINT = 'Photos are resized automatically. PDF up to ' + CONFIG.MAX_UPLOAD_MB + ' MB.';
+/* ====================================================== */
+
+const $ = s => document.querySelector(s);
+const catColor = c => (CATEGORIES.find(x => x[0] === c) || [0, '#8a8f8c'])[1];
+const money = n => { n = Number(n || 0); return (n < 0 ? '-' : '') + CONFIG.CURRENCY + Math.abs(n).toLocaleString(CONFIG.LOCALE, { maximumFractionDigits: 2 }); };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtDate = d => { if (!d) return ''; const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); };
+const shortDate = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }); };
+const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const stOf = e => e.status || 'Approved';
+const DEMO = !CONFIG.API_URL;
+const demoPin = () => { try { return localStorage.getItem('pgc_demo_pin') || '1234'; } catch (e) { return '1234'; } };
+
+let state = { expenses: [], budget: 0, pendingCount: 0, passSummary: null, passes: [] };
+let pin = ''; try { pin = sessionStorage.getItem('pgc_pin') || ''; } catch (e) {}
+let admin = false, editingId = null;
+
+document.title = CONFIG.TOURNAMENT + ' · Expenditure Tracker';
+$('#tName').textContent = CONFIG.TOURNAMENT;
+$('#cName').textContent = 'Expenditure tracker · ' + CONFIG.CLUB;
+document.querySelectorAll('.cur').forEach(e => e.textContent = CONFIG.CURRENCY);
+
+/* ---------- data layer ---------- */
+function demoSeed() {
+  const t = new Date(); const d = n => { const x = new Date(t); x.setDate(x.getDate() - n); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+  const mk = (i, date, category, description, paidTo, amount, mode, billNo, status, by) => ({ id: 'd' + i, date, category, description, paidTo, amount, mode, billNo, addedBy: by || 'Admin', notes: '', status: status || 'Approved', createdAt: date });
+  return [
+    mk(1, d(9), 'Ground & Pitch', 'Ground booking advance', 'Town Panchayat', 25000, 'Bank transfer', 'B-101'),
+    mk(2, d(8), 'Ground & Pitch', 'Line marking and goal posts repair', 'Ravi Sports', 6800, 'Cash', '554', 'Approved', 'Suresh'),
+    mk(3, d(7), 'Printing & Publicity', 'Flex banners and posters', 'Sree Digital Prints', 9400, 'UPI', 'SDP-88', 'Approved', 'Anu'),
+    mk(4, d(6), 'Jerseys & Kits', 'Volunteer jerseys (30)', 'Kerala Sportswear', 12600, 'UPI', 'KS-2210'),
+    mk(5, d(5), 'Prizes & Trophies', 'Winner and runner-up trophies', 'Golden Trophy House', 18500, 'Cash', 'GT-77'),
+    mk(6, d(4), 'Sound, Lights & Decor', 'PA system and floodlight hire', 'Vision Events', 14000, 'Bank transfer', 'VE-310'),
+    mk(7, d(3), 'Referees & Officials', 'Referee fees, round 1', 'District Referees Panel', 7200, 'Cash', '', 'Approved', 'Rahul'),
+    mk(8, d(3), 'Food & Refreshments', 'Water and snacks for teams', 'Annas Stores', 3150, 'Cash', '', 'Approved', 'Anu'),
+    mk(9, d(2), 'Medical & First Aid', 'First aid kit and ambulance standby', 'City Care', 4500, 'UPI', 'CC-19'),
+    mk(10, d(1), 'Referees & Officials', 'Referee fees, quarter finals', 'District Referees Panel', 9600, 'Cash', ''),
+    mk(11, d(1), 'Food & Refreshments', 'Lunch for officials', 'Hotel Pulari', 5200, 'UPI', 'HP-402', 'Pending', 'Rahul'),
+    mk(12, d(0), 'Transport', 'Trophy and kit transport', 'Mani Tempo', 1800, 'Cash', '', 'Pending', 'Suresh'),
+    mk(13, d(0), 'Miscellaneous', 'Extra footballs', 'Ravi Sports', 2400, 'Cash', '', 'Pending', 'Anu')
+  ];
+}
+function demoStore() { let s = null; try { s = JSON.parse(localStorage.getItem('pgc_demo2')); } catch (e) {} return s || { expenses: demoSeed(), budget: 150000 }; }
+function demoSave() { try { localStorage.setItem('pgc_demo2', JSON.stringify({ expenses: state.expenses.map(e => Object.assign({}, e, { invoiceUrl: '' , hasInvoice: !!(e.invoiceUrl || e.hasInvoice) })), budget: state.budget })); } catch (e) {} }
+
+async function post(payload) {
+  let j; try { const r = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) }); j = await r.json(); } catch (e) { throw new Error('Cannot reach the Google Sheet script. Check CONFIG.API_URL and that the deployment access is "Anyone".'); }
+  if (!j.ok) throw Object.assign(new Error(j.error || 'Request failed'), { wrongPin: /PIN/i.test(j.error || '') });
+  return j;
+}
+async function adminApi(payload) {
+  try { return await post(Object.assign({ pin }, payload)); }
+  catch (e) { if (e.wrongPin) logout(true); throw e; }
+}
+
+async function load(silent) {
+  if (!silent) $('#sync').textContent = 'Syncing…';
+  try {
+    if (DEMO) { const dp = demoPasses(); state.passSummary = summarize(dp); state.passes = admin ? dp : []; const s = demoStore(); state.expenses = s.expenses; state.budget = s.budget; if (!admin) { state.pendingCount = s.expenses.filter(e => stOf(e) === 'Pending').length; state.expenses = s.expenses.filter(e => stOf(e) === 'Approved'); } }
+    else if (admin) { const j = await post({ action: 'adminList', pin }); state.expenses = j.expenses; state.budget = j.settings.budget || 0; state.passes = (await post({ action: 'passList', pin })).passes || []; state.passSummary = summarize(state.passes); }
+    else { const j = await (await fetch(CONFIG.API_URL)).json(); if (!j.ok) throw new Error(j.error || 'Could not read the sheet'); state.expenses = j.expenses || []; state.budget = (j.settings && j.settings.budget) || 0; state.pendingCount = j.pendingCount || 0; state.passSummary = j.passSummary || null; state.passes = []; }
+    setBanner(); $('#sync').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    $('#sync').textContent = 'Offline';
+    if (!silent) setBanner('Could not load data from Google Sheets. Check the Apps Script URL and that access is set to "Anyone". (' + e.message + ')', true);
+  }
+  renderAll();
+}
+function setBanner(msg) {
+  $('#banner').innerHTML = msg ? '<div class="banner err">' + esc(msg) + '</div>' : DEMO ? '<div class="banner"><b>Demo mode.</b> Sample data saved only in this browser. Paste your Apps Script URL into <code>CONFIG.API_URL</code> to connect Google Sheets. Demo admin passcode: <b>1234</b></div>' : '';
+}
+let tt; function toast(m, bad) { const t = $('#toast'); t.textContent = m; t.className = 'on' + (bad ? ' bad' : ''); clearTimeout(tt); tt = setTimeout(() => t.className = '', 3200); }
+
+/* ---------- admin login / logout ---------- */
+function setAdminUI() {
+  $('#adminTab').hidden = !admin; $('#setBudget').hidden = !admin;
+  $('#lock').textContent = admin ? 'Admin · Log out' : 'Admin login';
+  if (!admin && !$('#tab-admin').hidden) showTab('dash');
+}
+async function tryLogin(p) {
+  if (DEMO) { if (p !== demoPin()) throw new Error('Wrong passcode. This page is in demo mode (no API_URL set), so the demo passcode applies (1234 unless you changed it).'); }
+  else { try { await post({ action: 'adminList', pin: p }); } catch (e) { throw new Error(e.wrongPin ? 'Wrong passcode' : e.message); } }
+  pin = p; admin = true; try { sessionStorage.setItem('pgc_pin', p); } catch (e) {}
+}
+function logout(silent) { pin = ''; admin = false; try { sessionStorage.removeItem('pgc_pin'); } catch (e) {} setAdminUI(); resetForm('a'); load(); if (!silent) toast('Logged out'); else toast('Session expired. Please log in again.', true); }
+$('#lock').onclick = () => { if (admin) return logout(); $('#pinInput').value = ''; $('#pinErr').textContent = ''; $('#pinDlg').showModal(); $('#pinInput').focus(); };
+$('#pinCancel').onclick = () => $('#pinDlg').close();
+$('#pinForm').onsubmit = async e => {
+  e.preventDefault(); const b = $('#pinGo'); b.disabled = true;
+  try { await tryLogin($('#pinInput').value.trim()); $('#pinDlg').close(); setAdminUI(); await load(); showTab('admin'); toast('Welcome, admin'); }
+  catch (er) { $('#pinErr').textContent = er.message; } finally { b.disabled = false; }
+};
+$('#refresh').onclick = () => load();
+
+/* ---------- tabs ---------- */
+function showTab(t) {
+  document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  ['dash', 'submit', 'records', 'admin'].forEach(x => $('#tab-' + x).hidden = x !== t);
+  if (t === 'submit') $('#thanks').hidden = true;
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showSub(s) {
+  document.querySelectorAll('.subnav button').forEach(b => b.setAttribute('aria-selected', b.dataset.sub === s));
+  ['pending', 'all', 'new', 'settings'].forEach(x => $('#sub-' + x).hidden = x !== s);
+  if (s !== 'new' && editingId) resetForm('a');
+}
+document.querySelectorAll('.subnav button').forEach(b => b.onclick = () => showSub(b.dataset.sub));
+
+/* ---------- helpers ---------- */
+function sumBy(list, key) { const m = {}; list.forEach(e => m[e[key] || 'Other'] = (m[e[key] || 'Other'] || 0) + e.amount); return Object.entries(m).sort((a, b) => b[1] - a[1]); }
+const sorted = list => list.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+const approved = () => state.expenses.filter(e => stOf(e) === 'Approved');
+const pendingList = () => state.expenses.filter(e => stOf(e) === 'Pending');
+
+function renderAll() { renderDash(); renderPasses(); renderRecords(); renderAdmin(); }
+
+/* ---------- dashboard (approved only) ---------- */
+function renderDash() {
+  const ex = approved(), total = ex.reduce((s, e) => s + e.amount, 0);
+  $('#kTotal').textContent = money(total);
+  $('#kCount').textContent = ex.length + (ex.length === 1 ? ' approved entry' : ' approved entries');
+  const pc = admin ? pendingList().length : state.pendingCount;
+  $('#pendNote').textContent = pc ? pc + (pc === 1 ? ' entry is' : ' entries are') + ' waiting for admin approval and not counted above.' : '';
+  const b = state.budget;
+  $('#kBudget').textContent = b ? money(b) : 'Not set';
+  const rem = b - total, bar = $('#kBar');
+  if (b) {
+    $('#kRemLbl').textContent = rem >= 0 ? 'Remaining' : 'Over budget by';
+    $('#kRem').textContent = money(Math.abs(rem)); $('#kRem').classList.toggle('over', rem < 0);
+    bar.classList.toggle('over', rem < 0); bar.firstElementChild.style.width = Math.min(100, total / b * 100) + '%';
+  } else { $('#kRemLbl').textContent = 'Remaining'; $('#kRem').textContent = '-'; $('#kRem').classList.remove('over'); bar.firstElementChild.style.width = '0'; }
+  const mx = ex.reduce((m, e) => e.amount > (m ? m.amount : 0) ? e : m, null);
+  $('#kMax').textContent = money(mx ? mx.amount : 0); $('#kMaxSub').textContent = mx ? mx.description : '-';
+
+  const cats = sumBy(ex, 'category'); let acc = 0, h = '<circle cx="21" cy="21" r="15.9155" fill="none" stroke="#eef1ec" stroke-width="7"/>';
+  cats.forEach(([c, v]) => { const p = total ? v / total * 100 : 0; h += `<circle cx="21" cy="21" r="15.9155" fill="none" stroke="${catColor(c)}" stroke-width="7" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="${25 - acc}"><title>${esc(c)}: ${esc(money(v))}</title></circle>`; acc += p; });
+  h += `<text x="21" y="20.5" text-anchor="middle" font-size="3.4" style="fill:#63706a;font-family:Inter,sans-serif">TOTAL</text><text x="21" y="26" text-anchor="middle" font-size="5" font-weight="700">${esc(total >= 100000 ? CONFIG.CURRENCY + (total / 100000).toFixed(2) + 'L' : money(total))}</text>`;
+  $('#donut').innerHTML = h;
+  $('#legend').innerHTML = cats.length ? cats.map(([c, v]) => `<div><i style="background:${catColor(c)}"></i><span>${esc(c)}</span><b>${esc(money(v))}</b><em>${(v / total * 100).toFixed(0)}%</em></div>`).join('') : '<div class="empty">No approved expenses yet</div>';
+
+  const days = sumBy(ex, 'date').sort((a, b) => a[0].localeCompare(b[0])).slice(-14), mxd = Math.max(1, ...days.map(d => d[1]));
+  $('#daily').innerHTML = days.length ? days.map(([d, v]) => `<div class="col"><div class="v">${v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</div><div class="b" style="height:${v / mxd * 130}px" title="${esc(fmtDate(d))}: ${esc(money(v))}"></div><span>${esc(shortDate(d))}</span></div>`).join('') : '<div class="empty" style="width:100%">No approved expenses yet</div>';
+
+  const hb = arr => { const m = Math.max(1, ...arr.map(a => a[1])); return arr.length ? arr.map(([k, v]) => `<div class="hbar"><div class="t"><span>${esc(k)}</span><b>${esc(money(v))}</b></div><div class="bar"><i style="width:${v / m * 100}%"></i></div></div>`).join('') : '<div class="empty">No data</div>'; };
+  $('#modes').innerHTML = hb(sumBy(ex, 'mode'));
+  $('#payees').innerHTML = hb(sumBy(ex.filter(e => e.paidTo), 'paidTo').slice(0, 5));
+
+  const rec = sorted(ex).slice(0, 8);
+  $('#recent').innerHTML = rec.length ? `<table><thead><tr><th>Date</th><th>Details</th><th class="n">Amount</th></tr></thead><tbody>${rec.map(e => `<tr><td style="white-space:nowrap">${esc(fmtDate(e.date))}</td><td>${esc(e.description)}<div><span class="tag" style="background:${catColor(e.category)}22">${esc(e.category)}</span> <span class="sub2">${esc(e.paidTo || '')}</span></div></td><td class="n"><b>${esc(money(e.amount))}</b></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No approved expenses yet.</div>';
+}
+
+/* ---------- passes & season tickets on the dashboard ---------- */
+function summarize(list) {
+  const live = (list || []).filter(p => p.status !== 'Cancelled');
+  const sum = t => live.filter(p => p.type === t).reduce((a, p) => ({ n: a.n + 1, qty: a.qty + p.qty, price: a.price + p.price, paid: a.paid + p.paid }), { n: 0, qty: 0, price: 0, paid: 0 });
+  return { vp: sum('Volunteer Pass'), st: sum('Season Ticket') };
+}
+function demoPasses() {
+  try { const s = JSON.parse(localStorage.getItem('pgc_passes_demo')); if (s) return s; } catch (e) {}
+  const t = new Date(), d = n => { const x = new Date(t); x.setDate(x.getDate() - n); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+  const mk = (i, date, type, name, no, qty, price, paid, by) => ({ id: 's' + i, date, type, name, phone: '', passNo: no, qty, price, paid, mode: 'Cash', collectedBy: by, status: 'Issued' });
+  return [mk(1, d(6), 'Season Ticket', 'Anil Kumar', 'ST-001', 1, 500, 500, 'Suresh'), mk(2, d(5), 'Season Ticket', 'Meera Nair', 'ST-002', 2, 1000, 1000, 'Suresh'), mk(3, d(4), 'Volunteer Pass', 'Rahul S', 'VP-001', 1, 200, 200, 'Anu'), mk(4, d(3), 'Volunteer Pass', 'Anu P', 'VP-002', 1, 200, 200, 'Anu'), mk(5, d(2), 'Season Ticket', 'Joseph T', 'ST-003', 3, 1500, 800, 'Rahul'), mk(6, d(1), 'Volunteer Pass', 'Vishnu M', 'VP-003', 1, 200, 0, 'Anu')];
+}
+function renderPasses() {
+  const ps = state.passSummary, card = $('#passCard');
+  card.hidden = !ps; $('#passLink').hidden = !admin; if (!ps) return;
+  const spent = approved().reduce((s, e) => s + e.amount, 0), paid = ps.vp.paid + ps.st.paid, price = ps.vp.price + ps.st.price, net = paid - spent;
+  const m = (l, v, s, cls) => `<div class="m"><div class="l">${l}</div><div class="v ${cls || ''}">${v}</div><div class="s">${s}</div></div>`;
+  let h = m('Volunteer passes', ps.vp.qty, esc(money(ps.vp.paid)) + ' collected') + m('Season tickets', ps.st.qty, esc(money(ps.st.paid)) + ' collected') + m('Total collected', esc(money(paid)), 'from passes and tickets');
+  if (admin) h += m('Balance to collect', esc(money(Math.max(0, price - paid))), 'not yet paid', price > paid ? 'over' : '');
+  h += m('Collected minus spent', esc(money(net)), net >= 0 ? 'ahead of expenses' : 'behind expenses', net < 0 ? 'over' : '');
+  $('#passStats').innerHTML = h;
+  const rec = $('#passRecent'), list = admin ? state.passes.filter(p => p.status !== 'Cancelled').sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 6) : [];
+  rec.hidden = !list.length;
+  rec.innerHTML = list.length ? `<table><thead><tr><th>Date</th><th>Pass no.</th><th>Holder</th><th>Type</th><th class="n">Qty</th><th class="n">Paid</th></tr></thead><tbody>${list.map(p => `<tr><td style="white-space:nowrap">${esc(fmtDate(p.date))}</td><td>${esc(p.passNo)}</td><td>${esc(p.name)}</td><td><span class="tag">${esc(p.type)}</span></td><td class="n">${p.qty}</td><td class="n"><b>${esc(money(p.paid))}</b>${p.price > p.paid ? ` <span class="sub2">of ${esc(money(p.price))}</span>` : ''}</td></tr>`).join('')}</tbody></table>` : '';
+}
+
+/* ---------- public records ---------- */
+function filtered() {
+  const q = $('#qSearch').value.trim().toLowerCase(), c = $('#qCat').value, f = $('#qFrom').value, t = $('#qTo').value;
+  return sorted(approved()).filter(e => (!c || e.category === c) && (!f || e.date >= f) && (!t || e.date <= t) && (!q || [e.description, e.paidTo, e.billNo, e.addedBy, e.notes, e.category].join(' ').toLowerCase().includes(q)));
+}
+function renderRecords() {
+  const list = filtered();
+  $('#recCount').textContent = '(' + list.length + ' of ' + approved().length + ')';
+  $('#filtTotal').textContent = money(list.reduce((s, e) => s + e.amount, 0));
+  $('#records').innerHTML = list.length ? `<table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Paid to</th><th>Mode</th><th>Added by</th><th class="n">Amount</th></tr></thead><tbody>${list.map(e => `<tr><td style="white-space:nowrap">${esc(fmtDate(e.date))}</td><td><span class="tag" style="background:${catColor(e.category)}22">${esc(e.category)}</span></td><td>${esc(e.description)}${e.billNo ? `<div class="sub2">Bill ${esc(e.billNo)}</div>` : ''}${(e.invoiceUrl || e.hasInvoice) ? `<div>${invLink(e)}</div>` : ''}</td><td>${esc(e.paidTo || '')}</td><td>${esc(e.mode || '')}</td><td>${esc(e.addedBy || '')}</td><td class="n"><b>${esc(money(e.amount))}</b></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No matching records.</div>';
+}
+['#qSearch', '#qCat', '#qFrom', '#qTo'].forEach(s => $(s).addEventListener('input', renderRecords));
+
+/* ---------- admin portal ---------- */
+function adminFiltered() {
+  const q = $('#aSearch').value.trim().toLowerCase(), c = $('#aCat').value, s = $('#aStatus').value;
+  return sorted(state.expenses).filter(e => (!c || e.category === c) && (!s || stOf(e) === s) && (!q || [e.description, e.paidTo, e.billNo, e.addedBy, e.notes, e.category].join(' ').toLowerCase().includes(q)));
+}
+function renderAdmin() {
+  if (!admin) return;
+  const pl = sorted(pendingList()).reverse();
+  $('#pendBadge').textContent = $('#pendBadge2').textContent = pl.length; $('#pendBadge').hidden = !pl.length;
+  $('#pendList').innerHTML = pl.length ? pl.map(e => `<div class="pcard"><div><b>${esc(e.description)}</b><div><span class="tag" style="background:${catColor(e.category)}22">${esc(e.category)}</span> <span class="sub2">${esc(fmtDate(e.date))} · ${esc(e.paidTo || 'no payee')} · ${esc(e.mode || '')}${e.billNo ? ' · Bill ' + esc(e.billNo) : ''}</span></div><div class="sub2">Submitted by <b>${esc(e.addedBy || 'unknown')}</b>${e.notes ? ' · ' + esc(e.notes) : ''} ${invLink(e)}</div></div><div class="amt">${esc(money(e.amount))}</div><div class="acts"><button class="btn ok sm" data-act="approve" data-id="${esc(e.id)}">Approve</button><button class="btn ghost sm" data-act="edit" data-id="${esc(e.id)}">Edit</button><button class="btn no sm" data-act="reject" data-id="${esc(e.id)}">Reject</button></div></div>`).join('') : '<div class="empty">Nothing is waiting for approval.</div>';
+  const list = adminFiltered();
+  $('#aCount').textContent = '(' + list.length + ' of ' + state.expenses.length + ')';
+  $('#aRecords').innerHTML = list.length ? `<table><thead><tr><th>Date</th><th>Details</th><th>Added by</th><th>Status</th><th class="n">Amount</th><th></th></tr></thead><tbody>${list.map(e => { const st = stOf(e); return `<tr><td style="white-space:nowrap">${esc(fmtDate(e.date))}</td><td>${esc(e.description)}<div><span class="tag" style="background:${catColor(e.category)}22">${esc(e.category)}</span> <span class="sub2">${esc(e.paidTo || '')}${e.billNo ? ' · Bill ' + esc(e.billNo) : ''}</span> ${invLink(e)}</div></td><td>${esc(e.addedBy || '')}</td><td><span class="tag st-${st}">${st}</span></td><td class="n"><b>${esc(money(e.amount))}</b></td><td style="white-space:nowrap">${st !== 'Approved' ? `<button class="btn ok sm" data-act="approve" data-id="${esc(e.id)}">Approve</button> ` : ''}${st === 'Approved' ? `<button class="btn ghost sm" data-act="reject" data-id="${esc(e.id)}">Reject</button> ` : ''}<button class="btn ghost sm" data-act="edit" data-id="${esc(e.id)}">Edit</button> <button class="btn danger sm" data-act="del" data-id="${esc(e.id)}">Delete</button></td></tr>`; }).join('')}</tbody></table>` : '<div class="empty">No matching entries.</div>';
+}
+['#aSearch', '#aCat', '#aStatus'].forEach(s => $(s).addEventListener('input', renderAdmin));
+$('#tab-admin').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return; const id = b.dataset.id, act = b.dataset.act;
+  if (act === 'edit') return startEdit(id);
+  if (act === 'del') return confirmDelete(id);
+  const status = act === 'approve' ? 'Approved' : 'Rejected';
+  try { if (!DEMO) await adminApi({ action: 'setStatus', id, status }); const x = state.expenses.find(v => v.id === id); if (x) x.status = status; if (DEMO) demoSave(); renderAll(); toast(status === 'Approved' ? 'Approved' : 'Rejected'); }
+  catch (er) { toast(er.message, true); }
+});
+
+/* ---------- forms (member = 'm', admin = 'a') ---------- */
+function formHTML(p) {
+  const adm = p === 'a';
+  return `<div class="f">
+    <div><label for="${p}Date">Date</label><input id="${p}Date" type="date" required></div>
+    <div><label for="${p}Cat">Category</label><select id="${p}Cat" required>${CATEGORIES.map(c => `<option>${esc(c[0])}</option>`).join('')}</select></div>
+    <div><label for="${p}Amt">Amount (${esc(CONFIG.CURRENCY)})</label><input id="${p}Amt" type="number" step="0.01" min="0.01" inputmode="decimal" required></div>
+    <div class="full"><label for="${p}Desc">Description</label><input id="${p}Desc" type="text" maxlength="160" placeholder="e.g. Referee fee, semi-final 1" required></div>
+    <div><label for="${p}Paid">Paid to</label><input id="${p}Paid" type="text" maxlength="80" placeholder="Person / shop / vendor"></div>
+    <div><label for="${p}Mode">Payment mode</label><select id="${p}Mode">${MODES.map(m => `<option>${esc(m)}</option>`).join('')}</select></div>
+    <div><label for="${p}Bill">Bill / receipt no.</label><input id="${p}Bill" type="text" maxlength="40"></div>
+    <div><label for="${p}By">${adm ? 'Added by' : 'Your name'}</label><input id="${p}By" type="text" maxlength="60" placeholder="${adm ? 'Admin name' : 'Your name'}" ${adm ? '' : 'required'}></div>
+    <div class="full"><label for="${p}Notes">Notes</label><textarea id="${p}Notes" maxlength="300"></textarea></div>
+    <div class="full"><label for="${p}File">Invoice / bill (JPG or PDF, optional)</label><input id="${p}File" type="file" accept=".jpg,.jpeg,.pdf,image/jpeg,application/pdf"><div class="sub2" id="${p}FileInfo" style="margin-top:6px"></div></div>
+  </div>
+  <div class="row" style="margin-top:18px"><button class="btn gold" id="${p}Save" type="submit">${adm ? 'Save entry' : 'Submit for approval'}</button><button class="btn ghost" id="${p}Cancel" type="button" hidden>Cancel edit</button></div>`;
+}
+['m', 'a'].forEach(p => { $('#form-' + p).innerHTML = formHTML(p); });
+$('#qCat').innerHTML += CATEGORIES.map(c => `<option>${esc(c[0])}</option>`).join('');
+$('#aCat').innerHTML += CATEGORIES.map(c => `<option>${esc(c[0])}</option>`).join('');
+
+function resetForm(p) {
+  if (p === 'a') { editingId = null; $('#aTitle').textContent = 'New admin entry'; $('#aSave').textContent = 'Save entry'; $('#aCancel').hidden = true; $('#subNewBtn').textContent = 'Add admin entry'; }
+  $('#form-' + p).reset(); $('#' + p + 'Date').value = today(); $('#' + p + 'FileInfo').textContent = FILE_HINT;
+  try { $('#' + p + 'By').value = localStorage.getItem('pgc_by_' + p) || ''; } catch (e) {}
+}
+resetForm('m'); resetForm('a');
+function readForm(p) { const g = k => $('#' + p + k).value.trim(); return { date: g('Date'), category: g('Cat'), amount: Number(g('Amt')), description: g('Desc'), paidTo: g('Paid'), mode: g('Mode'), billNo: g('Bill'), addedBy: g('By'), notes: g('Notes') }; }
+function startEdit(id) {
+  const e = state.expenses.find(x => x.id === id); if (!e) return;
+  editingId = id; showSub('new'); editingId = id;
+  $('#aDate').value = e.date; $('#aCat').value = e.category; $('#aAmt').value = e.amount; $('#aDesc').value = e.description; $('#aPaid').value = e.paidTo || ''; $('#aMode').value = e.mode || MODES[0]; $('#aBill').value = e.billNo || ''; $('#aBy').value = e.addedBy || ''; $('#aNotes').value = e.notes || '';
+  $('#aFileInfo').innerHTML = e.invoiceUrl ? `Current invoice: <button type="button" class="btn ghost sm" data-inv="${esc(e.invoiceUrl)}" data-mime="${esc(e.invoiceMime || '')}">View invoice</button> &nbsp; <label style="display:inline;text-transform:none;letter-spacing:0;font-size:13px"><input id="aRemoveInv" type="checkbox" style="width:auto;min-height:0"> Remove it</label> &nbsp; (or choose a new file to replace)` : FILE_HINT;
+  $('#aTitle').textContent = 'Edit entry'; $('#aSave').textContent = 'Update entry'; $('#aCancel').hidden = false; $('#subNewBtn').textContent = 'Editing…';
+  window.scrollTo({ top: 0 });
+}
+$('#aCancel').onclick = () => { resetForm('a'); showSub('all'); };
+
+/* ---------- invoice files ---------- */
+const MAX_PDF = CONFIG.MAX_UPLOAD_MB * 1024 * 1024;
+const b64 = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+const loadImg = f => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Could not read the image')); i.src = URL.createObjectURL(f); });
+async function fileToPayload(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return null;
+  const pdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name), jpg = f.type === 'image/jpeg' || /\.jpe?g$/i.test(f.name);
+  if (!pdf && !jpg) throw new Error('Invoice must be a JPG or PDF file');
+  if (pdf) { if (f.size > MAX_PDF) throw new Error('PDF is larger than ' + CONFIG.MAX_UPLOAD_MB + ' MB'); return { name: f.name, mime: 'application/pdf', data: await b64(f) }; }
+  const img = await loadImg(f), k = Math.min(1, CONFIG.IMAGE_MAX_SIDE / Math.max(img.width, img.height));
+  const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', CONFIG.IMAGE_QUALITY));
+  return { name: f.name.replace(/\.[^.]+$/, '') + '.jpg', mime: 'image/jpeg', data: await b64(blob) };
+}
+function demoUrl(file) { if (!file) return ''; const bin = atob(file.data), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return URL.createObjectURL(new Blob([u], { type: file.mime })); }
+['m', 'a'].forEach(p => $('#' + p + 'File').addEventListener('change', e => { const f = e.target.files[0]; $('#' + p + 'FileInfo').textContent = f ? f.name + ' (' + Math.round(f.size / 1024) + ' KB)' : FILE_HINT; }));
+const invLink = e => admin ? (e.invoiceUrl ? `<button type="button" class="btn ghost sm" data-inv="${esc(e.invoiceUrl)}" data-mime="${esc(e.invoiceMime || '')}">View invoice</button>` : '') : (e.hasInvoice ? '<span class="tag">Invoice on file</span>' : '');
+
+// member submit (no passcode)
+$('#form-m').addEventListener('submit', async ev => {
+  ev.preventDefault(); const x = readForm('m'), btn = $('#mSave');
+  if (!x.date || !x.description || !(x.amount > 0) || !x.addedBy) { toast('Fill date, description, amount and your name', true); return; }
+  try { localStorage.setItem('pgc_by_m', x.addedBy); } catch (e) {}
+  btn.disabled = true;
+  try {
+    const file = await fileToPayload($('#mFile')); let id = 'n' + Date.now();
+    if (DEMO) { const s = demoStore(); s.expenses.push(Object.assign({ id, status: 'Pending', createdAt: new Date().toISOString(), invoiceUrl: demoUrl(file), invoiceMime: file ? file.mime : '', hasInvoice: !!file }, x)); state.expenses = admin ? s.expenses : s.expenses.filter(e => stOf(e) === 'Approved'); state.budget = s.budget; state.pendingCount = s.expenses.filter(e => stOf(e) === 'Pending').length; try { localStorage.setItem('pgc_demo2', JSON.stringify(s)); } catch (e) {} }
+    else { x.file = file; btn.textContent = 'Uploading…'; id = (await post({ action: 'submit', expense: x })).id; delete x.file; state.pendingCount++; if (admin) await load(); }
+    resetForm('m'); $('#thanks').hidden = false; renderAll(); window.scrollTo({ top: 0 });
+  } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.textContent = 'Submit for approval'; }
+});
+
+// admin add / update
+$('#form-a').addEventListener('submit', async ev => {
+  ev.preventDefault(); if (!admin) return; const x = readForm('a'), btn = $('#aSave');
+  if (!x.date || !x.description || !(x.amount > 0)) { toast('Fill date, description and a valid amount', true); return; }
+  try { localStorage.setItem('pgc_by_a', x.addedBy); } catch (e) {}
+  btn.disabled = true;
+  try {
+    const file = await fileToPayload($('#aFile')), rm = !!($('#aRemoveInv') && $('#aRemoveInv').checked), dUrl = DEMO ? demoUrl(file) : '';
+    if (file) btn.textContent = 'Uploading…';
+    if (editingId) {
+      x.id = editingId; if (!DEMO) await adminApi({ action: 'update', expense: Object.assign({ file, removeInvoice: rm }, x) });
+      const i = state.expenses.findIndex(e => e.id === editingId); const extra = file ? { invoiceUrl: dUrl, invoiceMime: file.mime } : rm ? { invoiceUrl: '' } : {}; state.expenses[i] = Object.assign({}, state.expenses[i], x, extra); toast('Entry updated'); resetForm('a'); showSub('all');
+    } else {
+      let id = 'n' + Date.now(); if (!DEMO) id = (await adminApi({ action: 'add', expense: Object.assign({ file }, x) })).id;
+      state.expenses.push(Object.assign({ id, status: 'Approved', createdAt: new Date().toISOString(), invoiceUrl: dUrl, invoiceMime: file ? file.mime : '' }, x)); toast('Entry added and approved'); resetForm('a'); showTab('dash');
+    }
+    if (DEMO) demoSave(); else if (file || rm) await load(); renderAll();
+  } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.textContent = editingId ? 'Update entry' : 'Save entry'; }
+});
+
+/* ---------- invoice viewer ---------- */
+function openInvoice(url, mime) {
+  let src = url, isImg = false;
+  const m = /drive\.google\.com|docs\.google\.com/.test(url) ? String(url).match(/[-\w]{25,}/) : null;
+  if (m) { src = 'https://drive.google.com/file/d/' + m[0] + '/preview'; $('#invDown').href = 'https://drive.google.com/uc?export=download&id=' + m[0]; }
+  else { isImg = /^image\//.test(mime || ''); $('#invDown').href = url; }
+  $('#invOpen').href = url;
+  $('#invBody').innerHTML = isImg ? `<img src="${esc(src)}" alt="Invoice image">` : `<iframe src="${esc(src)}" title="Invoice preview"></iframe>`;
+  $('#invDlg').showModal();
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-inv]'); if (b) openInvoice(b.dataset.inv, b.dataset.mime); const im = e.target.closest('#invBody img'); if (im) im.classList.toggle('full'); });
+$('#invClose').onclick = () => $('#invDlg').close();
+$('#invDlg').addEventListener('click', e => { if (e.target === $('#invDlg')) $('#invDlg').close(); });
+$('#invDlg').addEventListener('close', () => { $('#invBody').innerHTML = ''; });
+
+/* ---------- change passcode ---------- */
+$('#pwForm').addEventListener('submit', async e => {
+  e.preventDefault(); const o = $('#pwOld').value.trim(), n = $('#pwNew').value.trim(), n2 = $('#pwNew2').value.trim(), btn = $('#pwSave');
+  if (n.length < 4) return toast('New passcode must be at least 4 characters', true);
+  if (n !== n2) return toast('The two new passcodes do not match', true);
+  if (o !== pin) return toast('Current passcode is not correct', true);
+  btn.disabled = true;
+  try {
+    if (DEMO) { try { localStorage.setItem('pgc_demo_pin', n); } catch (x) {} }
+    else await adminApi({ action: 'changePin', newPin: n });
+    pin = n; try { sessionStorage.setItem('pgc_pin', n); } catch (x) {}
+    $('#pwForm').reset(); toast('Passcode changed');
+  } catch (er) { toast(er.message, true); } finally { btn.disabled = false; }
+});
+
+/* ---------- delete + budget ---------- */
+let delId = null;
+function confirmDelete(id) { const e = state.expenses.find(x => x.id === id); if (!e) return; delId = id; $('#delText').textContent = `${fmtDate(e.date)} · ${e.description} · ${money(e.amount)}`; $('#delDlg').showModal(); }
+$('#delNo').onclick = () => $('#delDlg').close();
+$('#delYes').onclick = async () => {
+  try { if (!DEMO) await adminApi({ action: 'delete', id: delId }); state.expenses = state.expenses.filter(e => e.id !== delId); if (DEMO) demoSave(); renderAll(); toast('Entry deleted'); } catch (e) { toast(e.message, true); }
+  $('#delDlg').close();
+};
+$('#setBudget').onclick = () => { $('#budInput').value = state.budget || ''; $('#budDlg').showModal(); $('#budInput').focus(); };
+$('#budCancel').onclick = () => $('#budDlg').close();
+$('#budForm').onsubmit = async e => {
+  e.preventDefault(); const v = Number($('#budInput').value) || 0;
+  try { if (!DEMO) await adminApi({ action: 'setBudget', budget: v }); state.budget = v; if (DEMO) demoSave(); renderDash(); toast('Budget saved'); } catch (er) { toast(er.message, true); }
+  $('#budDlg').close();
+};
+
+/* ---------- CSV ---------- */
+function csvOut(list, name) {
+  const head = ['Date', 'Category', 'Description', 'Paid To', 'Amount', 'Payment Mode', 'Bill No', 'Added By', 'Status', 'Notes'].concat(admin ? ['Invoice URL'] : []), q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const csv = [head.map(q).join(',')].concat(list.map(e => [e.date, e.category, e.description, e.paidTo, e.amount, e.mode, e.billNo, e.addedBy, stOf(e), e.notes].concat(admin ? [e.invoiceUrl || ''] : []).map(q).join(','))).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+$('#csv').onclick = () => csvOut(filtered(), 'pulari-golden-cup-approved.csv');
+$('#aCsv').onclick = () => csvOut(adminFiltered(), 'pulari-golden-cup-all-entries.csv');
+
+
+/* ---------- auto refresh ---------- */
+let autoBusy = false;
+async function autoLoad() { if (document.hidden || autoBusy || (!admin && false)) return; autoBusy = true; try { await load(true); } finally { autoBusy = false; } }
+setInterval(autoLoad, Math.max(10, CONFIG.AUTO_REFRESH_SEC || 30) * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) autoLoad(); });
+window.addEventListener('focus', autoLoad);
+
+/* ---------- start ---------- */
+setAdminUI(); setBanner();
+(async () => { if (pin) { try { await tryLogin(pin); } catch (e) { pin = ''; try { sessionStorage.removeItem('pgc_pin'); } catch (x) {} } setAdminUI(); } load(); })();
+</script>
+</body>
+</html>
