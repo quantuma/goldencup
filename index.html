@@ -120,10 +120,10 @@ nav button[hidden]{display:none}
 </style>
 </head>
 <body>
-<header>
+  <header>
   <div class="wrap">
     <div class="top">
-     <img src="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png" alt="Logo" class="preloader-logo" width="70" height="70">
+      <svg class="cup" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#f2b705"/><path d="M20 14h24v12a12 12 0 0 1-24 0zM20 18h-6v4a8 8 0 0 0 8 8M44 18h6v4a8 8 0 0 1-8 8M29 38h6v8h-6zM22 48h20v4H22z" fill="#0f5132"/></svg>
       <div><h1 id="tName">Pulari Golden Cup</h1><small id="cName">Expenditure tracker · Pulari</small></div>
       <div class="sp"></div>
       <span class="sync" id="sync"></span>
@@ -152,6 +152,12 @@ nav button[hidden]{display:none}
       <div class="card kpi"><div class="lbl">Largest expense</div><div class="val" id="kMax">0</div><div class="sub" id="kMaxSub">-</div></div>
     </div>
     <p class="note" id="pendNote" style="margin-top:12px"></p>
+
+    <div class="card" id="passCard" style="margin-top:16px">
+      <h2>Passes &amp; season tickets <a class="btn ghost sm" id="passLink" href="passes.html" hidden style="float:right;text-transform:none;letter-spacing:0">Manage →</a></h2>
+      <div class="grid pk" id="passStats"></div>
+      <div class="scroll" id="passRecent" style="margin-top:16px" hidden></div>
+    </div>
 
     <div class="grid two">
       <div class="card"><h2>Spend by category</h2><div class="donutbox"><svg class="donut" id="donut" viewBox="0 0 42 42" role="img" aria-label="Spend by category"></svg><div class="legend" id="legend"></div></div></div>
@@ -254,6 +260,13 @@ nav button[hidden]{display:none}
     <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn ghost" type="button" id="budCancel">Cancel</button><button class="btn" type="submit">Save budget</button></div>
   </form>
 </dialog>
+<dialog id="invDlg" class="inv">
+  <div class="invbar"><b>Invoice</b><span class="sp"></span>
+    <a class="btn ghost sm" id="invOpen" target="_blank" rel="noopener">Open in new tab</a>
+    <a class="btn ghost sm" id="invDown" target="_blank" rel="noopener">Download</a>
+    <button class="btn sm" id="invClose" type="button">Close</button></div>
+  <div id="invBody" class="invbody"></div>
+</dialog>
 <dialog id="delDlg">
   <h3>Delete this entry?</h3>
   <p id="delText" class="sub2"></p>
@@ -264,12 +277,16 @@ nav button[hidden]{display:none}
 <script>
 /* =====================  SETTINGS  ===================== */
 const CONFIG = {
-  // Paste your Google Apps Script Web App URL here (ends with /exec). Leave empty for demo mode.
+ 
   API_URL: 'https://script.google.com/macros/s/AKfycbw-PAK-cJq1aPq0Lfh5ZC-DsJcF62c_GjQs9apLcB_dIbsSP4mfo_hrwHdsq1EyNHUIQg/exec',
   TOURNAMENT: 'Pulari Golden Cup',
   CLUB: 'Pulari',
   CURRENCY: '₹',
-  LOCALE: 'en-IN'
+  LOCALE: 'en-IN',
+  AUTO_REFRESH_SEC: 30,  // how often the page re-reads the Google Sheet by itself
+  MAX_UPLOAD_MB: 10,     // largest invoice file (PDF). Must match MAX_FILE_MB in Code.gs
+  IMAGE_MAX_SIDE: 1800,  // JPG photos are shrunk so the longest side is this many pixels (higher = sharper, bigger file)
+  IMAGE_QUALITY: 0.82    // JPG quality 0.5 to 0.95
 };
 const CATEGORIES = [
   ['Ground & Pitch','#0f5132'], ['Referees & Officials','#f2b705'], ['Prizes & Trophies','#b98900'],
@@ -278,12 +295,12 @@ const CATEGORIES = [
   ['Security & Volunteers','#7a8450'], ['Miscellaneous','#8a8f8c']
 ];
 const MODES = ['Cash','UPI','Bank transfer','Cheque','Card'];
-const FILE_HINT = 'Photos are resized automatically. PDF up to 5 MB.';
+const FILE_HINT = 'Photos are resized automatically. PDF up to ' + CONFIG.MAX_UPLOAD_MB + ' MB.';
 /* ====================================================== */
 
 const $ = s => document.querySelector(s);
 const catColor = c => (CATEGORIES.find(x => x[0] === c) || [0, '#8a8f8c'])[1];
-const money = n => CONFIG.CURRENCY + Number(n || 0).toLocaleString(CONFIG.LOCALE, { maximumFractionDigits: 2 });
+const money = n => { n = Number(n || 0); return (n < 0 ? '-' : '') + CONFIG.CURRENCY + Math.abs(n).toLocaleString(CONFIG.LOCALE, { maximumFractionDigits: 2 }); };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtDate = d => { if (!d) return ''; const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); };
 const shortDate = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }); };
@@ -292,7 +309,7 @@ const stOf = e => e.status || 'Approved';
 const DEMO = !CONFIG.API_URL;
 const demoPin = () => { try { return localStorage.getItem('pgc_demo_pin') || '1234'; } catch (e) { return '1234'; } };
 
-let state = { expenses: [], budget: 0, pendingCount: 0 };
+let state = { expenses: [], budget: 0, pendingCount: 0, passSummary: null, passes: [] };
 let pin = ''; try { pin = sessionStorage.getItem('pgc_pin') || ''; } catch (e) {}
 let admin = false, editingId = null;
 
@@ -334,16 +351,16 @@ async function adminApi(payload) {
   catch (e) { if (e.wrongPin) logout(true); throw e; }
 }
 
-async function load() {
-  $('#sync').textContent = 'Syncing…';
+async function load(silent) {
+  if (!silent) $('#sync').textContent = 'Syncing…';
   try {
-    if (DEMO) { const s = demoStore(); state.expenses = s.expenses; state.budget = s.budget; if (!admin) { state.pendingCount = s.expenses.filter(e => stOf(e) === 'Pending').length; state.expenses = s.expenses.filter(e => stOf(e) === 'Approved'); } }
-    else if (admin) { const j = await post({ action: 'adminList', pin }); state.expenses = j.expenses; state.budget = j.settings.budget || 0; }
-    else { const j = await (await fetch(CONFIG.API_URL)).json(); if (!j.ok) throw new Error(j.error || 'Could not read the sheet'); state.expenses = j.expenses || []; state.budget = (j.settings && j.settings.budget) || 0; state.pendingCount = j.pendingCount || 0; }
+    if (DEMO) { const dp = demoPasses(); state.passSummary = summarize(dp); state.passes = admin ? dp : []; const s = demoStore(); state.expenses = s.expenses; state.budget = s.budget; if (!admin) { state.pendingCount = s.expenses.filter(e => stOf(e) === 'Pending').length; state.expenses = s.expenses.filter(e => stOf(e) === 'Approved'); } }
+    else if (admin) { const j = await post({ action: 'adminList', pin }); state.expenses = j.expenses; state.budget = j.settings.budget || 0; state.passes = (await post({ action: 'passList', pin })).passes || []; state.passSummary = summarize(state.passes); }
+    else { const j = await (await fetch(CONFIG.API_URL)).json(); if (!j.ok) throw new Error(j.error || 'Could not read the sheet'); state.expenses = j.expenses || []; state.budget = (j.settings && j.settings.budget) || 0; state.pendingCount = j.pendingCount || 0; state.passSummary = j.passSummary || null; state.passes = []; }
     setBanner(); $('#sync').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } catch (e) {
     $('#sync').textContent = 'Offline';
-    setBanner('Could not load data from Google Sheets. Check the Apps Script URL and that access is set to "Anyone". (' + e.message + ')', true);
+    if (!silent) setBanner('Could not load data from Google Sheets. Check the Apps Script URL and that access is set to "Anyone". (' + e.message + ')', true);
   }
   renderAll();
 }
@@ -394,7 +411,7 @@ const sorted = list => list.slice().sort((a, b) => (b.date || '').localeCompare(
 const approved = () => state.expenses.filter(e => stOf(e) === 'Approved');
 const pendingList = () => state.expenses.filter(e => stOf(e) === 'Pending');
 
-function renderAll() { renderDash(); renderRecords(); renderAdmin(); }
+function renderAll() { renderDash(); renderPasses(); renderRecords(); renderAdmin(); }
 
 /* ---------- dashboard (approved only) ---------- */
 function renderDash() {
@@ -429,6 +446,32 @@ function renderDash() {
 
   const rec = sorted(ex).slice(0, 8);
   $('#recent').innerHTML = rec.length ? `<table><thead><tr><th>Date</th><th>Details</th><th class="n">Amount</th></tr></thead><tbody>${rec.map(e => `<tr><td style="white-space:nowrap">${esc(fmtDate(e.date))}</td><td>${esc(e.description)}<div><span class="tag" style="background:${catColor(e.category)}22">${esc(e.category)}</span> <span class="sub2">${esc(e.paidTo || '')}</span></div></td><td class="n"><b>${esc(money(e.amount))}</b></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No approved expenses yet.</div>';
+}
+
+/* ---------- passes & season tickets on the dashboard ---------- */
+function summarize(list) {
+  const live = (list || []).filter(p => p.status !== 'Cancelled');
+  const sum = t => live.filter(p => p.type === t).reduce((a, p) => ({ n: a.n + 1, qty: a.qty + p.qty, price: a.price + p.price, paid: a.paid + p.paid }), { n: 0, qty: 0, price: 0, paid: 0 });
+  return { vp: sum('Volunteer Pass'), st: sum('Season Ticket') };
+}
+function demoPasses() {
+  try { const s = JSON.parse(localStorage.getItem('pgc_passes_demo')); if (s) return s; } catch (e) {}
+  const t = new Date(), d = n => { const x = new Date(t); x.setDate(x.getDate() - n); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+  const mk = (i, date, type, name, no, qty, price, paid, by) => ({ id: 's' + i, date, type, name, phone: '', passNo: no, qty, price, paid, mode: 'Cash', collectedBy: by, status: 'Issued' });
+  return [mk(1, d(6), 'Season Ticket', 'Anil Kumar', 'ST-001', 1, 500, 500, 'Suresh'), mk(2, d(5), 'Season Ticket', 'Meera Nair', 'ST-002', 2, 1000, 1000, 'Suresh'), mk(3, d(4), 'Volunteer Pass', 'Rahul S', 'VP-001', 1, 200, 200, 'Anu'), mk(4, d(3), 'Volunteer Pass', 'Anu P', 'VP-002', 1, 200, 200, 'Anu'), mk(5, d(2), 'Season Ticket', 'Joseph T', 'ST-003', 3, 1500, 800, 'Rahul'), mk(6, d(1), 'Volunteer Pass', 'Vishnu M', 'VP-003', 1, 200, 0, 'Anu')];
+}
+function renderPasses() {
+  const ps = state.passSummary, card = $('#passCard');
+  card.hidden = !ps; $('#passLink').hidden = !admin; if (!ps) return;
+  const spent = approved().reduce((s, e) => s + e.amount, 0), paid = ps.vp.paid + ps.st.paid, price = ps.vp.price + ps.st.price, net = paid - spent;
+  const m = (l, v, s, cls) => `<div class="m"><div class="l">${l}</div><div class="v ${cls || ''}">${v}</div><div class="s">${s}</div></div>`;
+  let h = m('Volunteer passes', ps.vp.qty, esc(money(ps.vp.paid)) + ' collected') + m('Season tickets', ps.st.qty, esc(money(ps.st.paid)) + ' collected') + m('Total collected', esc(money(paid)), 'from passes and tickets');
+  if (admin) h += m('Balance to collect', esc(money(Math.max(0, price - paid))), 'not yet paid', price > paid ? 'over' : '');
+  h += m('Collected minus spent', esc(money(net)), net >= 0 ? 'ahead of expenses' : 'behind expenses', net < 0 ? 'over' : '');
+  $('#passStats').innerHTML = h;
+  const rec = $('#passRecent'), list = admin ? state.passes.filter(p => p.status !== 'Cancelled').sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 6) : [];
+  rec.hidden = !list.length;
+  rec.innerHTML = list.length ? `<table><thead><tr><th>Date</th><th>Pass no.</th><th>Holder</th><th>Type</th><th class="n">Qty</th><th class="n">Paid</th></tr></thead><tbody>${list.map(p => `<tr><td style="white-space:nowrap">${esc(fmtDate(p.date))}</td><td>${esc(p.passNo)}</td><td>${esc(p.name)}</td><td><span class="tag">${esc(p.type)}</span></td><td class="n">${p.qty}</td><td class="n"><b>${esc(money(p.paid))}</b>${p.price > p.paid ? ` <span class="sub2">of ${esc(money(p.price))}</span>` : ''}</td></tr>`).join('')}</tbody></table>` : '';
 }
 
 /* ---------- public records ---------- */
@@ -500,30 +543,30 @@ function startEdit(id) {
   const e = state.expenses.find(x => x.id === id); if (!e) return;
   editingId = id; showSub('new'); editingId = id;
   $('#aDate').value = e.date; $('#aCat').value = e.category; $('#aAmt').value = e.amount; $('#aDesc').value = e.description; $('#aPaid').value = e.paidTo || ''; $('#aMode').value = e.mode || MODES[0]; $('#aBill').value = e.billNo || ''; $('#aBy').value = e.addedBy || ''; $('#aNotes').value = e.notes || '';
-  $('#aFileInfo').innerHTML = e.invoiceUrl ? `Current invoice: <a href="${esc(e.invoiceUrl)}" target="_blank" rel="noopener">View</a> &nbsp; <label style="display:inline;text-transform:none;letter-spacing:0;font-size:13px"><input id="aRemoveInv" type="checkbox" style="width:auto;min-height:0"> Remove it</label> &nbsp; (or choose a new file to replace)` : FILE_HINT;
+  $('#aFileInfo').innerHTML = e.invoiceUrl ? `Current invoice: <button type="button" class="btn ghost sm" data-inv="${esc(e.invoiceUrl)}" data-mime="${esc(e.invoiceMime || '')}">View invoice</button> &nbsp; <label style="display:inline;text-transform:none;letter-spacing:0;font-size:13px"><input id="aRemoveInv" type="checkbox" style="width:auto;min-height:0"> Remove it</label> &nbsp; (or choose a new file to replace)` : FILE_HINT;
   $('#aTitle').textContent = 'Edit entry'; $('#aSave').textContent = 'Update entry'; $('#aCancel').hidden = false; $('#subNewBtn').textContent = 'Editing…';
   window.scrollTo({ top: 0 });
 }
 $('#aCancel').onclick = () => { resetForm('a'); showSub('all'); };
 
 /* ---------- invoice files ---------- */
-const MAX_PDF = 5 * 1024 * 1024;
+const MAX_PDF = CONFIG.MAX_UPLOAD_MB * 1024 * 1024;
 const b64 = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
 const loadImg = f => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Could not read the image')); i.src = URL.createObjectURL(f); });
 async function fileToPayload(inp) {
   const f = inp.files && inp.files[0]; if (!f) return null;
   const pdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name), jpg = f.type === 'image/jpeg' || /\.jpe?g$/i.test(f.name);
   if (!pdf && !jpg) throw new Error('Invoice must be a JPG or PDF file');
-  if (pdf) { if (f.size > MAX_PDF) throw new Error('PDF is larger than 5 MB'); return { name: f.name, mime: 'application/pdf', data: await b64(f) }; }
-  const img = await loadImg(f), k = Math.min(1, 1800 / Math.max(img.width, img.height));
+  if (pdf) { if (f.size > MAX_PDF) throw new Error('PDF is larger than ' + CONFIG.MAX_UPLOAD_MB + ' MB'); return { name: f.name, mime: 'application/pdf', data: await b64(f) }; }
+  const img = await loadImg(f), k = Math.min(1, CONFIG.IMAGE_MAX_SIDE / Math.max(img.width, img.height));
   const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
   c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', CONFIG.IMAGE_QUALITY));
   return { name: f.name.replace(/\.[^.]+$/, '') + '.jpg', mime: 'image/jpeg', data: await b64(blob) };
 }
 function demoUrl(file) { if (!file) return ''; const bin = atob(file.data), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return URL.createObjectURL(new Blob([u], { type: file.mime })); }
 ['m', 'a'].forEach(p => $('#' + p + 'File').addEventListener('change', e => { const f = e.target.files[0]; $('#' + p + 'FileInfo').textContent = f ? f.name + ' (' + Math.round(f.size / 1024) + ' KB)' : FILE_HINT; }));
-const invLink = e => admin ? (e.invoiceUrl ? `<a href="${esc(e.invoiceUrl)}" target="_blank" rel="noopener">View invoice</a>` : '') : (e.hasInvoice ? '<span class="tag">Invoice on file</span>' : '');
+const invLink = e => admin ? (e.invoiceUrl ? `<button type="button" class="btn ghost sm" data-inv="${esc(e.invoiceUrl)}" data-mime="${esc(e.invoiceMime || '')}">View invoice</button>` : '') : (e.hasInvoice ? '<span class="tag">Invoice on file</span>' : '');
 
 // member submit (no passcode)
 $('#form-m').addEventListener('submit', async ev => {
@@ -533,7 +576,7 @@ $('#form-m').addEventListener('submit', async ev => {
   btn.disabled = true;
   try {
     const file = await fileToPayload($('#mFile')); let id = 'n' + Date.now();
-    if (DEMO) { const s = demoStore(); s.expenses.push(Object.assign({ id, status: 'Pending', createdAt: new Date().toISOString(), invoiceUrl: demoUrl(file), hasInvoice: !!file }, x)); state.expenses = admin ? s.expenses : s.expenses.filter(e => stOf(e) === 'Approved'); state.budget = s.budget; state.pendingCount = s.expenses.filter(e => stOf(e) === 'Pending').length; try { localStorage.setItem('pgc_demo2', JSON.stringify(s)); } catch (e) {} }
+    if (DEMO) { const s = demoStore(); s.expenses.push(Object.assign({ id, status: 'Pending', createdAt: new Date().toISOString(), invoiceUrl: demoUrl(file), invoiceMime: file ? file.mime : '', hasInvoice: !!file }, x)); state.expenses = admin ? s.expenses : s.expenses.filter(e => stOf(e) === 'Approved'); state.budget = s.budget; state.pendingCount = s.expenses.filter(e => stOf(e) === 'Pending').length; try { localStorage.setItem('pgc_demo2', JSON.stringify(s)); } catch (e) {} }
     else { x.file = file; btn.textContent = 'Uploading…'; id = (await post({ action: 'submit', expense: x })).id; delete x.file; state.pendingCount++; if (admin) await load(); }
     resetForm('m'); $('#thanks').hidden = false; renderAll(); window.scrollTo({ top: 0 });
   } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.textContent = 'Submit for approval'; }
@@ -550,14 +593,15 @@ $('#form-a').addEventListener('submit', async ev => {
     if (file) btn.textContent = 'Uploading…';
     if (editingId) {
       x.id = editingId; if (!DEMO) await adminApi({ action: 'update', expense: Object.assign({ file, removeInvoice: rm }, x) });
-      const i = state.expenses.findIndex(e => e.id === editingId); const extra = file ? { invoiceUrl: dUrl } : rm ? { invoiceUrl: '' } : {}; state.expenses[i] = Object.assign({}, state.expenses[i], x, extra); toast('Entry updated'); resetForm('a'); showSub('all');
+      const i = state.expenses.findIndex(e => e.id === editingId); const extra = file ? { invoiceUrl: dUrl, invoiceMime: file.mime } : rm ? { invoiceUrl: '' } : {}; state.expenses[i] = Object.assign({}, state.expenses[i], x, extra); toast('Entry updated'); resetForm('a'); showSub('all');
     } else {
       let id = 'n' + Date.now(); if (!DEMO) id = (await adminApi({ action: 'add', expense: Object.assign({ file }, x) })).id;
-      state.expenses.push(Object.assign({ id, status: 'Approved', createdAt: new Date().toISOString(), invoiceUrl: dUrl }, x)); toast('Entry added and approved'); resetForm('a'); showTab('dash');
+      state.expenses.push(Object.assign({ id, status: 'Approved', createdAt: new Date().toISOString(), invoiceUrl: dUrl, invoiceMime: file ? file.mime : '' }, x)); toast('Entry added and approved'); resetForm('a'); showTab('dash');
     }
     if (DEMO) demoSave(); else if (file || rm) await load(); renderAll();
   } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.textContent = editingId ? 'Update entry' : 'Save entry'; }
 });
+
 /* ---------- invoice viewer ---------- */
 function openInvoice(url, mime) {
   let src = url, isImg = false;
@@ -612,6 +656,14 @@ function csvOut(list, name) {
 }
 $('#csv').onclick = () => csvOut(filtered(), 'pulari-golden-cup-approved.csv');
 $('#aCsv').onclick = () => csvOut(adminFiltered(), 'pulari-golden-cup-all-entries.csv');
+
+
+/* ---------- auto refresh ---------- */
+let autoBusy = false;
+async function autoLoad() { if (document.hidden || autoBusy || (!admin && false)) return; autoBusy = true; try { await load(true); } finally { autoBusy = false; } }
+setInterval(autoLoad, Math.max(10, CONFIG.AUTO_REFRESH_SEC || 30) * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) autoLoad(); });
+window.addEventListener('focus', autoLoad);
 
 /* ---------- start ---------- */
 setAdminUI(); setBanner();
