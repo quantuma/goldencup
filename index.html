@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pulari Golden Cup · Expenditure Tracker</title>
 <meta name="theme-color" content="#0f5132">
-<link rel="icon" href="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f5132'/%3E%3Cpath d='M20 14h24v12a12 12 0 0 1-24 0zM20 18h-6v4a8 8 0 0 0 8 8M44 18h6v4a8 8 0 0 1-8 8M29 38h6v8h-6zM22 48h20v4H22z' fill='%23f2b705'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png">
+  <link rel="preload" as="image" href="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png">
+ 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <style>
 :root{
@@ -26,6 +28,7 @@ header{background:var(--green);color:#fff;border-bottom:4px solid var(--gold)}
 .top .sp{flex:1}
 .sync{font-size:12px;opacity:.85}
 .hbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px}
+.hbtn{text-decoration:none;display:inline-block}
 .hbtn:hover{background:rgba(255,255,255,.22)}
 nav{display:flex;gap:4px}
 nav button{background:none;border:0;color:#cfe3d8;padding:12px 18px;cursor:pointer;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-4px}
@@ -120,11 +123,11 @@ nav button[hidden]{display:none}
 <header>
   <div class="wrap">
     <div class="top">
-<img src="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png" alt="Logo" class="preloader-logo" width="70" height="70">
+     <img src="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png" alt="Logo" class="preloader-logo" width="70" height="70">
       <div><h1 id="tName">Pulari Golden Cup</h1><small id="cName">Expenditure tracker · Pulari</small></div>
       <div class="sp"></div>
       <span class="sync" id="sync"></span>
-      <a class="hbtn" href="passes.html">Passes & Tickets</a>
+      <a class="hbtn" href="passes.html">Passes &amp; Tickets</a>
       <button class="hbtn" id="refresh" type="button">Refresh</button>
       <button class="hbtn" id="lock" type="button">Admin login</button>
     </div>
@@ -196,6 +199,8 @@ nav button[hidden]{display:none}
       <button data-sub="pending" aria-selected="true">Waiting for approval <span class="badge" id="pendBadge2">0</span></button>
       <button data-sub="all" aria-selected="false">All entries</button>
       <button data-sub="new" aria-selected="false" id="subNewBtn">Add admin entry</button>
+      <button data-sub="settings" aria-selected="false">Settings</button>
+      <a class="btn ghost sm" href="passes.html" style="align-self:center">Passes &amp; season tickets →</a>
     </div>
 
     <div id="sub-pending" class="card"><h2>Waiting for approval</h2><div class="pend" id="pendList"></div></div>
@@ -209,6 +214,19 @@ nav button[hidden]{display:none}
         <button class="btn ghost" id="aCsv" type="button">Export CSV</button>
       </div>
       <div class="scroll" id="aRecords"></div>
+    </div>
+
+    <div id="sub-settings" class="card" hidden>
+      <h2>Change admin passcode</h2>
+      <p class="note">The new passcode works for the expenses page and the passes page. Share it only with admins.</p>
+      <form id="pwForm" autocomplete="off" style="max-width:420px">
+        <div class="f" style="grid-template-columns:1fr">
+          <div><label for="pwOld">Current passcode</label><input id="pwOld" type="password" autocomplete="off" required></div>
+          <div><label for="pwNew">New passcode (4 to 30 characters)</label><input id="pwNew" type="password" minlength="4" maxlength="30" autocomplete="new-password" required></div>
+          <div><label for="pwNew2">Repeat new passcode</label><input id="pwNew2" type="password" minlength="4" maxlength="30" autocomplete="new-password" required></div>
+        </div>
+        <div class="row" style="margin-top:16px"><button class="btn gold" id="pwSave" type="submit">Change passcode</button></div>
+      </form>
     </div>
 
     <div id="sub-new" class="card" hidden>
@@ -247,7 +265,7 @@ nav button[hidden]{display:none}
 /* =====================  SETTINGS  ===================== */
 const CONFIG = {
   // Paste your Google Apps Script Web App URL here (ends with /exec). Leave empty for demo mode.
-  API_URL: 'https://script.google.com/macros/s/AKfycbw-PAK-cJq1aPq0Lfh5ZC-DsJcF62c_GjQs9apLcB_dIbsSP4mfo_hrwHdsq1EyNHUIQg/exec',
+  API_URL: '',
   TOURNAMENT: 'Pulari Golden Cup',
   CLUB: 'Pulari',
   CURRENCY: '₹',
@@ -272,6 +290,7 @@ const shortDate = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? 
 const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 const stOf = e => e.status || 'Approved';
 const DEMO = !CONFIG.API_URL;
+const demoPin = () => { try { return localStorage.getItem('pgc_demo_pin') || '1234'; } catch (e) { return '1234'; } };
 
 let state = { expenses: [], budget: 0, pendingCount: 0 };
 let pin = ''; try { pin = sessionStorage.getItem('pgc_pin') || ''; } catch (e) {}
@@ -306,8 +325,7 @@ function demoStore() { let s = null; try { s = JSON.parse(localStorage.getItem('
 function demoSave() { try { localStorage.setItem('pgc_demo2', JSON.stringify({ expenses: state.expenses.map(e => Object.assign({}, e, { invoiceUrl: '' , hasInvoice: !!(e.invoiceUrl || e.hasInvoice) })), budget: state.budget })); } catch (e) {} }
 
 async function post(payload) {
-  const r = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) });
-  const j = await r.json();
+  let j; try { const r = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) }); j = await r.json(); } catch (e) { throw new Error('Cannot reach the Google Sheet script. Check CONFIG.API_URL and that the deployment access is "Anyone".'); }
   if (!j.ok) throw Object.assign(new Error(j.error || 'Request failed'), { wrongPin: /PIN/i.test(j.error || '') });
   return j;
 }
@@ -341,7 +359,7 @@ function setAdminUI() {
   if (!admin && !$('#tab-admin').hidden) showTab('dash');
 }
 async function tryLogin(p) {
-  if (DEMO) { if (p !== '1234') throw new Error('Wrong passcode'); }
+  if (DEMO) { if (p !== demoPin()) throw new Error('Wrong passcode. This page is in demo mode (no API_URL set), so the demo passcode applies (1234 unless you changed it).'); }
   else { try { await post({ action: 'adminList', pin: p }); } catch (e) { throw new Error(e.wrongPin ? 'Wrong passcode' : e.message); } }
   pin = p; admin = true; try { sessionStorage.setItem('pgc_pin', p); } catch (e) {}
 }
@@ -365,7 +383,7 @@ function showTab(t) {
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 function showSub(s) {
   document.querySelectorAll('.subnav button').forEach(b => b.setAttribute('aria-selected', b.dataset.sub === s));
-  ['pending', 'all', 'new'].forEach(x => $('#sub-' + x).hidden = x !== s);
+  ['pending', 'all', 'new', 'settings'].forEach(x => $('#sub-' + x).hidden = x !== s);
   if (s !== 'new' && editingId) resetForm('a');
 }
 document.querySelectorAll('.subnav button').forEach(b => b.onclick = () => showSub(b.dataset.sub));
@@ -539,6 +557,21 @@ $('#form-a').addEventListener('submit', async ev => {
     }
     if (DEMO) demoSave(); else if (file || rm) await load(); renderAll();
   } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.textContent = editingId ? 'Update entry' : 'Save entry'; }
+});
+
+/* ---------- change passcode ---------- */
+$('#pwForm').addEventListener('submit', async e => {
+  e.preventDefault(); const o = $('#pwOld').value.trim(), n = $('#pwNew').value.trim(), n2 = $('#pwNew2').value.trim(), btn = $('#pwSave');
+  if (n.length < 4) return toast('New passcode must be at least 4 characters', true);
+  if (n !== n2) return toast('The two new passcodes do not match', true);
+  if (o !== pin) return toast('Current passcode is not correct', true);
+  btn.disabled = true;
+  try {
+    if (DEMO) { try { localStorage.setItem('pgc_demo_pin', n); } catch (x) {} }
+    else await adminApi({ action: 'changePin', newPin: n });
+    pin = n; try { sessionStorage.setItem('pgc_pin', n); } catch (x) {}
+    $('#pwForm').reset(); toast('Passcode changed');
+  } catch (er) { toast(er.message, true); } finally { btn.disabled = false; }
 });
 
 /* ---------- delete + budget ---------- */
