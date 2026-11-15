@@ -117,6 +117,17 @@ nav button[hidden]{display:none}
 .note{font-size:14px;color:var(--mute);margin:0 0 14px}
 .thanks{background:#e8f6ee;border:1px solid #b6e0c7;color:#0b5a33;padding:12px 14px;border-radius:10px;margin-bottom:14px}
 .adminbar{background:#16201a;color:#fff;font-size:13px;padding:6px 0}
+dialog.inv{max-width:980px;width:calc(100% - 24px);padding:0;overflow:hidden}
+.invbar{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}.invbar .sp{flex:1}.invbar a{text-decoration:none}
+.invbody{background:#1c211e;height:min(78vh,760px);display:grid;place-items:center;overflow:auto}
+.invbody iframe{width:100%;height:100%;border:0;background:#fff}
+.invbody img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in}
+.invbody img.full{max-width:none;max-height:none;cursor:zoom-out}
+.pk{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.pk .m{border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:12px 14px;background:#fffdf7}
+.pk .m .l{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.pk .m .v{font:700 28px/1.15 var(--display);font-variant-numeric:tabular-nums}
+.pk .m .s{font-size:12.5px;color:var(--mute)}
 </style>
 </head>
 <body>
