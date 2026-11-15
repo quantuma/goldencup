@@ -126,12 +126,12 @@ tr.cx td{opacity:.55}
 .calc{font-size:13px;color:var(--mute);margin-top:6px}
 </style>
 </head>
-<body>
-<header>
+<body>  
+  <header>
   <div class="wrap">
     <div class="top">
-          <img src="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png" alt="Logo" class="preloader-logo" width="70" height="70">
-      <div><h1 id="tName">Pulari Golden Cup</h1><small>Volunteer passes & season tickets · Pulari</small></div>
+      <svg class="cup" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#f2b705"/><path d="M20 14h24v12a12 12 0 0 1-24 0zM20 18h-6v4a8 8 0 0 0 8 8M44 18h6v4a8 8 0 0 1-8 8M29 38h6v8h-6zM22 48h20v4H22z" fill="#0f5132"/></svg>
+      <div><h1 id="tName">Pulari Golden Cup</h1><small>Volunteer passes &amp; season tickets · Pulari</small></div>
       <div class="sp"></div>
       <span class="sync" id="sync"></span>
       <a class="hbtn" href="index.html">Expenses</a>
@@ -220,13 +220,14 @@ const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbw-PAK-cJq1aPq0Lfh5ZC-DsJcF62c_GjQs9apLcB_dIbsSP4mfo_hrwHdsq1EyNHUIQg/exec',
   TOURNAMENT: 'Pulari Golden Cup',
   CURRENCY: '₹',
-  LOCALE: 'en-IN'
+  LOCALE: 'en-IN',
+  AUTO_REFRESH_SEC: 30   // how often the page re-reads the Google Sheet by itself
 };
 const MODES = ['Cash','UPI','Bank transfer','Cheque','Card'];
 const PREFIX = { 'Volunteer Pass': 'VP', 'Season Ticket': 'ST' };
 /* ====================================================== */
 const $ = s => document.querySelector(s);
-const money = n => CONFIG.CURRENCY + Number(n || 0).toLocaleString(CONFIG.LOCALE, { maximumFractionDigits: 2 });
+const money = n => { n = Number(n || 0); return (n < 0 ? '-' : '') + CONFIG.CURRENCY + Math.abs(n).toLocaleString(CONFIG.LOCALE, { maximumFractionDigits: 2 }); };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtDate = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); };
 const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
@@ -258,10 +259,10 @@ async function api(payload) { try { return await post(payload); } catch (e) { if
 const demoGet = () => { try { return JSON.parse(localStorage.getItem('pgc_passes_demo')) || seed(); } catch (e) { return seed(); } };
 const demoSave = () => { try { localStorage.setItem('pgc_passes_demo', JSON.stringify(passes)); } catch (e) {} };
 
-async function load() {
-  $('#sync').textContent = 'Syncing…';
+async function load(silent) {
+  if (!silent) $('#sync').textContent = 'Syncing…';
   try { passes = DEMO ? demoGet() : (await post({ action: 'passList' })).passes; $('#sync').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-  catch (e) { if (e.wrongPin) return; $('#sync').textContent = 'Offline'; toast(e.message, true); }
+  catch (e) { if (e.wrongPin) return; $('#sync').textContent = 'Offline'; if (!silent) toast(e.message, true); }
   render();
 }
 
@@ -343,6 +344,14 @@ $('#csv').onclick = () => {
   const csv = [head.map(q).join(',')].concat(filtered().map(p => [p.date, p.type, p.passNo, p.name, p.phone, p.qty, p.price, p.paid, p.price - p.paid, p.mode, p.collectedBy, p.status, p.notes].map(q).join(','))).join('\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' })); a.download = 'pulari-golden-cup-passes.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
+
+
+/* ---------- auto refresh ---------- */
+let autoBusy = false;
+async function autoLoad() { if (document.hidden || autoBusy || !pin) return; autoBusy = true; try { await load(true); } finally { autoBusy = false; } }
+setInterval(autoLoad, Math.max(10, CONFIG.AUTO_REFRESH_SEC || 30) * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) autoLoad(); });
+window.addEventListener('focus', autoLoad);
 
 /* ---------- start ---------- */
 resetForm();
