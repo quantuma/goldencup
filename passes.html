@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pulari Golden Cup · Passes &amp; Season Tickets</title>
 <meta name="theme-color" content="#0f5132">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f5132'/%3E%3Cpath d='M20 14h24v12a12 12 0 0 1-24 0zM20 18h-6v4a8 8 0 0 0 8 8M44 18h6v4a8 8 0 0 1-8 8M29 38h6v8h-6zM22 48h20v4H22z' fill='%23f2b705'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png">
+  <link rel="preload" as="image" href="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <style>
 :root{
@@ -129,8 +130,8 @@ tr.cx td{opacity:.55}
 <header>
   <div class="wrap">
     <div class="top">
-     <img src="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png" alt="Logo" class="preloader-logo" width="70" height="70">
-      <div><h1 id="tName">Pulari Golden Cup</h1><small>Volunteer passes &amp; season tickets · Pulari</small></div>
+          <img src="https://pulariartsandsportsclub.github.io/membershipfees/PULARI.png" alt="Logo" class="preloader-logo" width="70" height="70">
+      <div><h1 id="tName">Pulari Golden Cup</h1><small>Volunteer passes & season tickets · Pulari</small></div>
       <div class="sp"></div>
       <span class="sync" id="sync"></span>
       <a class="hbtn" href="index.html">Expenses</a>
@@ -215,8 +216,8 @@ tr.cx td{opacity:.55}
 <script>
 /* =====================  SETTINGS  ===================== */
 const CONFIG = {
- 
-  API_URL: 'https://script.google.com/macros/s/AKfycbw-PAK-cJq1aPq0Lfh5ZC-DsJcF62c_GjQs9apLcB_dIbsSP4mfo_hrwHdsq1EyNHUIQg/exec',
+  // Same Apps Script Web App URL as in index.html. Leave empty for demo mode.
+  API_URL: '',
   TOURNAMENT: 'Pulari Golden Cup',
   CURRENCY: '₹',
   LOCALE: 'en-IN'
@@ -230,6 +231,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const fmtDate = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); };
 const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 const DEMO = !CONFIG.API_URL;
+const demoPin = () => { try { return localStorage.getItem('pgc_demo_pin') || '1234'; } catch (e) { return '1234'; } };
 let pin = ''; try { pin = sessionStorage.getItem('pgc_pin') || ''; } catch (e) {}
 let passes = [], editingId = null, noTouched = false;
 
@@ -248,7 +250,7 @@ function seed() {
     mk(5, d(2), 'Season Ticket', 'Joseph T', '9846000005', 'ST-003', 3, 1500, 800, 'Cash', 'Rahul'), mk(6, d(1), 'Volunteer Pass', 'Vishnu M', '9846000006', 'VP-003', 1, 200, 0, 'Cash', 'Anu')];
 }
 async function post(payload) {
-  const r = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ pin }, payload)) }), j = await r.json();
+  let j; try { const r = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ pin }, payload)) }); j = await r.json(); } catch (e) { throw new Error('Cannot reach the Google Sheet script. Check CONFIG.API_URL and that the deployment access is "Anyone".'); }
   if (!j.ok) throw Object.assign(new Error(j.error || 'Request failed'), { wrongPin: /PIN/i.test(j.error || '') });
   return j;
 }
@@ -266,7 +268,7 @@ async function load() {
 /* ---------- login ---------- */
 function setUI(on) { $('#gate').hidden = on; $('#app').hidden = !on; $('#nav').hidden = !on; $('#lock').hidden = !on; $('#refresh').hidden = !on; }
 async function tryLogin(p) {
-  if (DEMO) { if (p !== '1234') throw new Error('Wrong passcode'); }
+  if (DEMO) { if (p !== demoPin()) throw new Error('Wrong passcode. This page is in demo mode (no API_URL set), so the demo passcode applies (1234 unless you changed it).'); }
   else { try { await post({ action: 'passList', pin: p }); } catch (e) { throw new Error(e.wrongPin ? 'Wrong passcode' : e.message); } }
   pin = p; try { sessionStorage.setItem('pgc_pin', p); } catch (e) {} setUI(true);
 }
