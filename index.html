@@ -558,6 +558,20 @@ $('#form-a').addEventListener('submit', async ev => {
     if (DEMO) demoSave(); else if (file || rm) await load(); renderAll();
   } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.textContent = editingId ? 'Update entry' : 'Save entry'; }
 });
+/* ---------- invoice viewer ---------- */
+function openInvoice(url, mime) {
+  let src = url, isImg = false;
+  const m = /drive\.google\.com|docs\.google\.com/.test(url) ? String(url).match(/[-\w]{25,}/) : null;
+  if (m) { src = 'https://drive.google.com/file/d/' + m[0] + '/preview'; $('#invDown').href = 'https://drive.google.com/uc?export=download&id=' + m[0]; }
+  else { isImg = /^image\//.test(mime || ''); $('#invDown').href = url; }
+  $('#invOpen').href = url;
+  $('#invBody').innerHTML = isImg ? `<img src="${esc(src)}" alt="Invoice image">` : `<iframe src="${esc(src)}" title="Invoice preview"></iframe>`;
+  $('#invDlg').showModal();
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-inv]'); if (b) openInvoice(b.dataset.inv, b.dataset.mime); const im = e.target.closest('#invBody img'); if (im) im.classList.toggle('full'); });
+$('#invClose').onclick = () => $('#invDlg').close();
+$('#invDlg').addEventListener('click', e => { if (e.target === $('#invDlg')) $('#invDlg').close(); });
+$('#invDlg').addEventListener('close', () => { $('#invBody').innerHTML = ''; });
 
 /* ---------- change passcode ---------- */
 $('#pwForm').addEventListener('submit', async e => {
